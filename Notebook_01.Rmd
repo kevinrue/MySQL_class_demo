@@ -1,0 +1,165 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# R Notebook primer
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r cars}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
+
+# Classroom sample data
+
+Let us create random data to fill a MySQL database that describes the following
+situation:
+
+* 26 students
+    + unique identifier
+    + last name
+    + first name
+    + age
+    + gender
+* 5 classes
+    + unique identifier
+    + subject
+* Students can register to any number of classes.
+* Classes accept any number of students.
+
+This database may then be used to query information such as:
+
+* List of students registered for a class
+* Mean age of students registered for a class
+* Gender distribution of students registered for a class
+
+# Data generation
+
+## Student identifiers
+
+Let us create 26 simple student identifiers made up of the letter `"S"` and
+a two-digit number from `01` to `26`:
+
+```{r studentID}
+studentID <- paste0(sprintf("S%.2i", 1:26))
+```
+
+## Student name
+
+Let us create 26 simple student names made up of the uppercase and lowercase
+letters of the alphabet, such as the first student is called `A` `a`, and the
+last student is called `Z` `z`:
+
+```{r studentName}
+studentLastName <- LETTERS
+studentFirstName <- letters
+```
+
+## Student age
+
+Let us select 26 ages randomly sampled from integers in the range [`20`-`25`]:
+
+```{r studentAge}
+studentAge <- sample(20:25, 26, TRUE)
+```
+
+## Student gender
+
+Let us select 26 random genders randomly sampled between
+`"male"` and `"female"`:
+
+```{r studentGender}
+studentGender <- sample(c("male", "female"), 26, TRUE)
+```
+
+## Class subjects
+
+Let us create 5 simple class identifiers made up of the letter `"C"` and
+a single-digit number from `1` to `5`:
+
+```{r classID}
+classID <- paste0(sprintf("C%i", 1:5))
+```
+
+## Class subject
+
+Let us create 5 simple class subjects made up of 5 consecutive letters from
+the alphabet, such as the first two subjects are `"abcde"` and `"fghij"`:
+
+```{r classSubject}
+classSubject <-
+    sapply(seq(1, 21, 5), function(x){paste0(letters[x:(x+4)], collapse = "")})
+```
+
+## Student-class registration
+
+Let us randomly register students to classes.
+To do so, we first create all `r 26*5` (= 26 x 5) possible student-class pairs;
+we then randomly assign a TRUE/FALSE value to each pair,
+where `TRUE` declares that the student is registered to the class:
+
+```{r student_class}
+registerStudent <- rep(studentID, times = length(classID))
+registerClass <- rep(classID, each = length(studentID))
+registerLogical <- sample(c(TRUE,FALSE), length(registerStudent), TRUE)
+```
+
+# Export data to text files
+
+## Students
+
+Let us collate student information in a `data.frame` saved in a tabulated file
+that will be use to populate a table in the database:
+
+```{r student}
+student <- data.frame(
+    id = studentID,
+    lastname = studentLastName,
+    firstname = studentFirstName,
+    age = studentAge,
+    gender = studentGender
+)
+write.table(
+    student, "student.txt",
+    quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+```
+
+## Classes
+
+Let us collate class information in a `data.frame` saved in a tabulated file
+that will be use to populate a table in the database:
+
+```{r class}
+class <- data.frame(
+    id = classID,
+    subject = classSubject
+)
+write.table(
+    class, "class.txt",
+    quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE
+)
+```
+
+## Registration
+
+Let us collate registrations in a `data.frame` saved in a tabulated file
+that will be use to populate a table in the database:
+
+```{r register}
+register <- data.frame(
+    student = registerStudent[registerLogical],
+    class = registerClass[registerLogical]
+)
+write.table(
+    register, "register.txt",
+    quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE
+)
+```
+
